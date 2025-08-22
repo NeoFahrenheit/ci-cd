@@ -1,0 +1,43 @@
+name: Bump Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git setup
+        uses: actions/checkout@v4
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+
+      - name: Decide bump type
+        id: decide_bump
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          BUMP_TYPE=$(python3 extract_bump_type.py "$COMMIT_MSG")
+          if [ "$BUMP_TYPE" = "error" ]; then
+            echo "Invalid bump type. FAILURE"
+            exit 1
+          fi
+          echo "BUMP_TYPE: $BUMP_TYPE"
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          VERSION=$(python3 flutter_bump_version.py "${{ steps.decide_bump.outputs.bump_type }}")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit changes
+        run: |
+          git add pubspec.yaml
+          git commit -m "ci: bumped version"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git tag v${{ steps.bump_version.outputs.version }}
+          git push origin main --tags
