@@ -30,6 +30,11 @@ ci-cd/
 
 ### Commit Message Format
 
+#### First, be sure GitHub Actions have write permissions to your repository.
+- Go to Settings > Actions > Workflow permissions > Read and write permissions
+
+and save!
+
 To trigger automatic version bumping, include a `Bump:` directive at the end of your commit message:
 
 ```
