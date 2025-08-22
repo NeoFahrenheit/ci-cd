@@ -61,7 +61,7 @@ class GenericVersion:
             str: The version number.
         """        
 
-        with open(self.filename, 'w') as f:
+        with open(self.filename, 'r') as f:
             return f.read().strip()
     
 
